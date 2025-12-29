@@ -1,0 +1,7 @@
+log_level: DEBUG
+
+otel_metrics_export:
+  ttl: 5m
+  endpoint: http://dummy-otel-collector:4317
+  features:
+    - application

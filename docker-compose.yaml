@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Service to instrument. Change it to any
+  # other container that you want to instrument.
+  postgres:
+    container_name: pg
+    image: postgres:16.10
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  autoinstrumenter:
+    container_name: obi
+    image: docker.io/otel/ebpf-instrument:main
+    pid: 'service:postgres'
+    privileged: true
+    ports:
+      - '6060:6060'
+    environment:
+      OTEL_EBPF_OPEN_PORT: 5432
+      OTEL_EBPF_CONFIG_PATH: /etc/obi/obi-config.yaml
+      OTEL_EBPF_PROFILE_PORT: 6060
+    depends_on:
+      - postgres
+    volumes:
+      - ./obi-config.yaml:/etc/obi/obi-config.yaml
+  pgtest:
+    container_name: pgtest
+    build: .
+    depends_on:
+      - postgres
